@@ -1,6 +1,15 @@
 (() => {
   const root = document.documentElement;
 
+  const LEADS_ENDPOINT = 'https://enrico-leads.marketeria.cloud/api/lead';
+  const params = new URLSearchParams(window.location.search);
+  const utm = {
+    utm_source: params.get('utm_source') || '',
+    utm_medium: params.get('utm_medium') || '',
+    utm_campaign: params.get('utm_campaign') || '',
+    gclid: params.get('gclid') || ''
+  };
+
   document.querySelector('.theme-toggle')?.addEventListener('click', () => {
     const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
     root.dataset.theme = next;
@@ -39,6 +48,23 @@
       }
       const data = new FormData(form);
       const topic = document.body.dataset.topic;
+
+      try {
+        fetch(LEADS_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            nome: data.get('nome') || '',
+            cidade: data.get('cidade') || '',
+            vinculo: data.get('vinculo') || '',
+            relato: data.get('relato') || '',
+            pagina: window.location.pathname,
+            ...utm
+          }),
+          keepalive: true
+        }).catch(() => {});
+      } catch (e) { /* best-effort */ }
+
       const message = [
         `Olá, gostaria de solicitar informações sobre ${topic}.`,
         `Nome: ${data.get('nome')}`,
